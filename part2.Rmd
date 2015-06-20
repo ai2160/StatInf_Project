@@ -1,0 +1,83 @@
+---
+title: "Analysis of Tooth Growth data"
+author: "Abhilash Itharaju"
+date: "June 19, 2015"
+output: pdf_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE, warning=FALSE, fig.path='Figs2/')
+```
+
+Abstract
+========
+In this report we analyse the effect of vitamin C on tooth growth in Guinea Pigs. The data measures the response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
+
+Assumptions
+===========
+It is assumed that the Guinea Pigs for each combination of dose and delivery method are different i.e., they are **not paired**. There is no good reason to assume that the population variance is constant across the groups either. So, it is assumed that the population variance is indeed different.
+
+Exploratory analysis
+====================
+
+Here is the data from the expiriment
+
+```{r exp1}
+data(ToothGrowth)
+head(ToothGrowth)
+colSums((is.na(ToothGrowth)))
+str(ToothGrowth)
+table(ToothGrowth$supp, ToothGrowth$dose)
+```
+
+It can be seen that there are is no missing data, there are exactly 10 individuals for each of the groups. Here are a couple of visualizations of the data.
+
+```{r exp2}
+library(ggplot2)
+plot <- ggplot(data=ToothGrowth, aes(x=dose,y=len))
+plot + geom_boxplot(aes(col=as.factor(dose))) + facet_grid(. ~ supp)
+
+plot <- ggplot(data=ToothGrowth, aes(x=supp,y=len))
+plot + geom_boxplot(aes(col=supp)) + facet_grid(. ~ dose)
+```
+
+From the exploratory analysis we could say that
+
+1. As dosage increases, the length increases for both intake methods
+2. For same dosage level, looks like orange juice performed better (at lower dosage) or as good as (at higher dosage) ascorbic acid.
+
+
+Inference
+=========
+
+Let us see if some inference can be made about the Guinea Pig population from the data.
+
+1) Is Orange Juice better intake method than Ascorbic Acid?
+--------------------------------------------------------
+
+In this section let us see if we can make a claim about the Guinea Pig population with a 95% confidance that Orange Juice on an average is a better intake method.
+
+```{r inf1}
+t.test(len ~ supp, data=ToothGrowth)
+```
+
+Since the 95% confidance interval includes a mean differance of zero, this claim **can not** be made about Guinea Pig population.
+
+
+2) Is Orange Juice better intake method at lower dosage? (0.5, 1)
+-------------------------------------------------------------
+
+From exploratory analysis, it was observed that both intake methods are about equally effective at high dosage levels. It looked like at lower dosage levels, orange juice significantly out performed ascorbic acid. Let us see if the revised claim has substance to it.
+
+```{r inf2}
+t.test(len ~ supp, data=subset(ToothGrowth, dose == 0.5))
+
+t.test(len ~ supp, data=subset(ToothGrowth, dose == 1))
+```
+
+At lower dosage levels of 0.5 and 1, 95% confidance interval is completely positive. So, we can claim that **for Guinea Pig population, on an average, Orange Juice is a better intake method than Ascorbic Acid for teeth growth**.
+
+### P Values
+
+Looking at the P Values, we can also claim that Orange Juice is better at dosage level of both 
+0.5 and 1 than Ascorbic Acid. However, at 0.5 the difference is even more pronounced.
